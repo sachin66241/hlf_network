@@ -1,0 +1,35 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+OrdererOrgs:
+
+  - Name: Orderer
+    Domain: cybro-blockchain
+    EnableNodeOUs: true
+    Template:
+      Start: 1
+      Count: 5
+      
+
+PeerOrgs:
+  - Name: adminOrg
+    Domain: adminOrg.cybro-blockchain
+    EnableNodeOUs: true
+    Template:
+      Start: 1
+      Count: 2
+    Users:
+      Start: 1
+      Count: 1
+
+  - Name: userOrg
+    Domain: userOrg.cybro-blockchain
+    EnableNodeOUs: true
+    Template:
+      Start: 1
+      Count: 2
+    Users:
+      Start: 1
+      Count: 1

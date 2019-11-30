@@ -1,0 +1,187 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+---
+
+Organizations:
+    - &OrdererOrg
+        Name: OrdererOrg
+        ID: OrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/cybro-blockchain/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererMSP.admin')"
+
+    - &Org1
+        Name: Org1MSP
+        ID: Org1MSP
+        MSPDir: crypto-config/peerOrganizations/adminOrg.cybro-blockchain/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('Org1MSP.admin', 'Org1MSP.peer', 'Org1MSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('Org1MSP.admin', 'Org1MSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('Org1MSP.admin')"
+        AnchorPeers:
+            - Host: peer1.adminOrg.cybro-blockchain
+              Port: 7051
+
+    - &Org2
+        Name: Org2MSP
+        ID: Org2MSP
+        MSPDir: crypto-config/peerOrganizations/userOrg.cybro-blockchain/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('Org2MSP.admin', 'Org2MSP.peer', 'Org2MSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('Org2MSP.admin', 'Org2MSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('Org2MSP.admin')"
+
+        AnchorPeers:
+            - Host: peer1.userOrg.cybro-blockchain
+              Port: 9051
+
+Capabilities:
+    Channel: &ChannelCapabilities
+        V1_4_3: true
+        V1_3: false
+        V1_1: false
+    Orderer: &OrdererCapabilities
+        V1_4_2: true
+        V1_1: false
+    Application: &ApplicationCapabilities
+        V1_4_2: true
+        V1_3: false
+        V1_2: false
+        V1_1: false
+
+Application: &ApplicationDefaults
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+    FourOrgsChannel:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Org1
+                - *Org2
+            Capabilities:
+                <<: *ApplicationCapabilities
+
+    Raft:
+        <<: *ChannelDefaults
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: etcdraft
+            EtcdRaft:
+                Consenters:
+                - Host: orderer1.cybro-blockchain
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer1.cybro-blockchain/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer1.cybro-blockchain/tls/server.crt
+                - Host: orderer2.cybro-blockchain
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer2.cybro-blockchain/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer2.cybro-blockchain/tls/server.crt
+                - Host: orderer3.cybro-blockchain
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer3.cybro-blockchain/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer3.cybro-blockchain/tls/server.crt
+                - Host: orderer4.cybro-blockchain
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer4.cybro-blockchain/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer4.cybro-blockchain/tls/server.crt
+                - Host: orderer5.cybro-blockchain
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer5.cybro-blockchain/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/cybro-blockchain/orderers/orderer5.cybro-blockchain/tls/server.crt
+            Addresses:
+                - orderer1.cybro-blockchain:7050
+                - orderer2.cybro-blockchain:7050
+                - orderer3.cybro-blockchain:7050
+                - orderer4.cybro-blockchain:7050
+                - orderer5.cybro-blockchain:7050
+
+            Organizations:
+            - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+            - <<: *OrdererOrg
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                - *Org1
+                - *Org2
